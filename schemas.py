@@ -12,7 +12,7 @@ Model name is converted to lowercase for the collection name:
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 
 # Example schemas (replace with your own):
 
@@ -36,13 +36,31 @@ class Product(BaseModel):
     description: Optional[str] = Field(None, description="Product description")
     price: float = Field(..., ge=0, description="Price in dollars")
     category: str = Field(..., description="Product category")
+    image: Optional[str] = Field(None, description="Image URL")
     in_stock: bool = Field(True, description="Whether product is in stock")
 
-# Add your own schemas here:
-# --------------------------------------------------
+class OrderItem(BaseModel):
+    product_id: str = Field(..., description="ID of the product")
+    title: str = Field(..., description="Snapshot of product title at purchase time")
+    price: float = Field(..., ge=0, description="Snapshot of product price at purchase time")
+    quantity: int = Field(..., ge=1, description="Quantity purchased")
+    image: Optional[str] = Field(None, description="Image URL snapshot")
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Order(BaseModel):
+    """
+    Orders collection schema
+    Collection name: "order" (lowercase of class name)
+    """
+    items: List[OrderItem] = Field(..., description="Items in the order")
+    subtotal: float = Field(..., ge=0, description="Sum of item (price * qty)")
+    shipping: float = Field(..., ge=0, description="Shipping cost")
+    tax: float = Field(..., ge=0, description="Tax amount")
+    total: float = Field(..., ge=0, description="Order total amount")
+    customer_name: str = Field(..., description="Customer full name")
+    customer_email: str = Field(..., description="Customer email")
+    address_line1: str = Field(..., description="Address line 1")
+    address_line2: Optional[str] = Field(None, description="Address line 2")
+    city: str = Field(..., description="City")
+    state: str = Field(..., description="State/Province")
+    postal_code: str = Field(..., description="Postal/ZIP code")
+    country: str = Field(..., description="Country")
